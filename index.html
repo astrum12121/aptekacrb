@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аптека "Здоровье" - Главная</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header__inner">
+                <a href="index.html" class="logo">Аптека "Здоровье"</a>
+                <nav class="nav">
+                    <a href="index.html" class="nav__link active">Главная</a>
+                    <a href="products.html" class="nav__link">Каталог</a>
+                    <a href="cart.html" class="nav__link">Корзина <span class="cart-count">0</span></a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="hero">
+            <div class="container">
+                <h1 class="hero__title">Ваше здоровье — наш приоритет</h1>
+                <p class="hero__text">Широкий ассортимент лекарств и медицинских товаров</p>
+                <a href="products.html" class="btn">Перейти в каталог</a>
+            </div>
+        </section>
+
+        <section class="categories">
+            <div class="container">
+                <h2 class="section-title">Категории товаров</h2>
+                <div class="categories__grid">
+                    <a href="products.html?category=medicines" class="category-card">
+                        <img src="img/medicines/nurofen.jpg" alt="Лекарства" class="category-card__img">
+                        <h3 class="category-card__title">Лекарственные препараты</h3>
+                    </a>
+                    <a href="products.html?category=vitamins" class="category-card">
+                        <img src="img/vitamins/complivit.jpg" alt="Витамины" class="category-card__img">
+                        <h3 class="category-card__title">Витамины и БАДы</h3>
+                    </a>
+                    <a href="products.html?category=hygiene" class="category-card">
+                        <img src="img/hygiene/mask.jpg" alt="Гигиена" class="category-card__img">
+                        <h3 class="category-card__title">Средства гигиены</h3>
+                    </a>
+                    <a href="products.html?category=devices" class="category-card">
+                        <img src="img/devices/thermometer.jpg" alt="Медтехника" class="category-card__img">
+                        <h3 class="category-card__title">Медицинские приборы</h3>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer__text">© 2025 Аптека "Здоровье". Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
