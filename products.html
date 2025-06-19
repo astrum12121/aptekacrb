@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог товаров | Аптека "Здоровье"</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Дополнительные стили для активного состояния */
+        .nav__link.active {
+            position: relative;
+            font-weight: bold;
+        }
+        .nav__link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header__inner">
+                <a href="index.html" class="logo">Аптека "Здоровье"</a>
+                <nav class="nav">
+                    <a href="index.html" class="nav__link">Главная</a>
+                    <a href="products.html" class="nav__link active">Каталог</a>
+                    <a href="cart.html" class="nav__link">Корзина <span class="cart-count">0</span></a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="products">
+            <div class="container">
+                <h1 class="section-title">Каталог товаров</h1>
+                
+                <div class="products__filters">
+                    <select class="filter-select" id="category-filter">
+                        <option value="all">Все категории</option>
+                        <option value="medicines">Лекарства</option>
+                        <option value="vitamins">Витамины</option>
+                        <option value="hygiene">Гигиена</option>
+                        <option value="devices">Медтехника</option>
+                    </select>
+                    <input type="text" class="search-input" placeholder="Поиск..." id="search-input">
+                </div>
+
+                <div class="products__grid" id="products-grid">
+                    <!-- Товары будут загружены через JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer__text">© 2023 Аптека "Здоровье". Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Данные товаров
+        const products = [
+            // Лекарства
+            { id: 1, category: "medicines", name: "Нурофен таблетки 200мг №20", price: 350, image: "img/medicines/nurofen.jpg" },
+            { id: 2, category: "medicines", name: "Парацетамол 500мг №20", price: 120, image: "img/medicines/paracetamol.jpg" },
+            { id: 3, category: "medicines", name: "Амбробене сироп 100мл", price: 280, image: "img/medicines/ambrobene.jpg" },
+            { id: 4, category: "medicines", name: "Лоперамид капс. 2мг №10", price: 85, image: "img/medicines/loperamide.jpg" },
+            { id: 5, category: "medicines", name: "Валидол таб. 60мг №10", price: 45, image: "img/medicines/validol.jpg" },
+            
+            // Витамины
+            { id: 6, category: "vitamins", name: "Компливит витамины №60", price: 450, image: "img/vitamins/complivit.jpg" },
+            { id: 7, category: "vitamins", name: "Супрадин таб. шип. №10", price: 520, image: "img/vitamins/supradin.jpg" },
+            { id: 8, category: "vitamins", name: "Магний B6 таб. №50", price: 380, image: "img/vitamins/magnesium.jpg" },
+            { id: 9, category: "vitamins", name: "Омега-3 капс. 500мг №60", price: 650, image: "img/vitamins/omega.jpg" },
+            { id: 10, category: "vitamins", name: "Витамин D3 2000МЕ №60", price: 420, image: "img/vitamins/vitamin-d.jpg" },
+            
+            // Гигиена
+            { id: 11, category: "hygiene", name: "Маска медицинская 50шт", price: 250, image: "img/hygiene/mask.jpg" },
+            { id: 12, category: "hygiene", name: "Бинт стерильный 5м × 10см", price: 120, image: "img/hygiene/bandage.jpg" },
+            { id: 13, category: "hygiene", name: "Пластырь бактерицидный 20шт", price: 85, image: "img/hygiene/plaster.jpg" },
+            { id: 14, category: "hygiene", name: "Антисептик для рук 100мл", price: 180, image: "img/hygiene/sanitizer.jpg" },
+            { id: 15, category: "hygiene", name: "Вата медицинская 100г", price: 65, image: "img/hygiene/cotton.jpg" },
+            
+            // Медтехника
+            { id: 16, category: "devices", name: "Термометр электронный", price: 490, image: "img/devices/thermometer.jpg" },
+            { id: 17, category: "devices", name: "Тонометр автоматический", price: 2990, image: "img/devices/tonometer.jpg" },
+            { id: 18, category: "devices", name: "Ингалятор компрессорный", price: 3450, image: "img/devices/inhaler.jpg" },
+            { id: 19, category: "devices", name: "Глюкометр + 10 тест-полосок", price: 1850, image: "img/devices/glucometer.jpg" },
+            { id: 20, category: "devices", name: "Грелка электрическая", price: 1290, image: "img/devices/heating-pad.jpg" }
+        ];
+
+        // Функция отображения товаров
+        function displayProducts(productsToShow) {
+            const productsGrid = document.getElementById('products-grid');
+            productsGrid.innerHTML = '';
+            
+            if (productsToShow.length === 0) {
+                productsGrid.innerHTML = '<p class="no-products">Товары не найдены</p>';
+                return;
+            }
+            
+            productsToShow.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.dataset.id = product.id;
+                productCard.dataset.category = product.category;
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-card__img">
+                    <h3 class="product-card__title">${product.name}</h3>
+                    <p class="product-card__price">${product.price} ₽</p>
+                    <button class="btn add-to-cart">В корзину</button>
+                `;
+                productsGrid.appendChild(productCard);
+            });
+        }
+
+        // Функция фильтрации товаров
+        function filterProducts() {
+            const category = document.getElementById('category-filter').value;
+            const searchText = document.getElementById('search-input').value.toLowerCase();
+            
+            let filtered = products;
+            
+            if (category !== 'all') {
+                filtered = filtered.filter(p => p.category === category);
+            }
+            
+            if (searchText) {
+                filtered = filtered.filter(p => 
+                    p.name.toLowerCase().includes(searchText)
+                );
+            }
+            
+            displayProducts(filtered);
+        }
+
+        // Функция добавления в корзину
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: productId,
+                    quantity: 1,
+                    price: product.price,
+                    name: product.name,
+                    image: product.image
+                });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCounter();
+        }
+
+        // Обновление счетчика корзины
+        function updateCartCounter() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.querySelectorAll('.cart-count').forEach(el => {
+                el.textContent = totalItems;
+            });
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Отображаем все товары
+            displayProducts(products);
+            
+            // Назначаем обработчики событий
+            document.getElementById('category-filter').addEventListener('change', filterProducts);
+            document.getElementById('search-input').addEventListener('input', filterProducts);
+            
+            // Обработчик для кнопок "В корзину" (делегирование событий)
+            document.addEventListener('click', function(e) {
+                if (e.target.classList.contains('add-to-cart')) {
+                    const productId = parseInt(e.target.closest('.product-card').dataset.id);
+                    addToCart(productId);
+                    e.target.textContent = 'Добавлено!';
+                    setTimeout(() => {
+                        e.target.textContent = 'В корзину';
+                    }, 1000);
+                }
+            });
+            
+            // Обновляем счетчик корзины
+            updateCartCounter();
+        });
+    </script>
+</body>
+</html>

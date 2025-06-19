@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина | Аптека "Здоровье"</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-to-catalog {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .back-to-catalog::before {
+            content: "←";
+            margin-right: 5px;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #777;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        .cart-item__img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-right: 20px;
+        }
+        .cart-item__info {
+            flex-grow: 1;
+        }
+        .cart-item__title {
+            margin-bottom: 5px;
+        }
+        .cart-item__price {
+            color: #777;
+            margin-bottom: 10px;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+        }
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .quantity-btn:hover {
+            background: #e0e0e0;
+        }
+        .quantity {
+            margin: 0 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+        .remove-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+        .remove-item:hover {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header__inner">
+                <a href="index.html" class="logo">Аптека "Здоровье"</a>
+                <nav class="nav">
+                    <a href="index.html" class="nav__link">Главная</a>
+                    <a href="products.html" class="nav__link">Каталог</a>
+                    <a href="cart.html" class="nav__link active">Корзина <span class="cart-count">0</span></a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="cart">
+            <div class="container">
+                <div class="cart-header">
+                    <h1 class="section-title">Ваша корзина</h1>
+                    <a href="products.html" class="back-to-catalog">Вернуться в каталог</a>
+                </div>
+                
+                <div class="cart__items" id="cart-items">
+                    <!-- Товары будут загружены через JS -->
+                </div>
+                
+                <div class="cart__summary">
+                    <div class="summary-row">
+                        <span>Товары:</span>
+                        <span id="subtotal">0 ₽</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка:</span>
+                        <span id="delivery">0 ₽</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Итого:</span>
+                        <span id="total">0 ₽</span>
+                    </div>
+                    <a href="checkout.html" class="btn btn--large">Оформить заказ</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p class="footer__text">© 2025 Аптека "Здоровье". Все права защищены.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Данные товаров (должны совпадать с products.html)
+        const products = [
+            { id: 1, name: "Нурофен таблетки 200мг №20", price: 350, image: "img/medicines/nurofen.jpg" },
+            { id: 2, name: "Парацетамол 500мг №20", price: 120, image: "img/medicines/paracetamol.jpg" },
+            { id: 3, name: "Амбробене сироп 100мл", price: 280, image: "img/medicines/ambrobene.jpg" },
+            { id: 4, name: "Лоперамид капс. 2мг №10", price: 85, image: "img/medicines/loperamide.jpg" },
+            { id: 5, name: "Валидол таб. 60мг №10", price: 45, image: "img/medicines/validol.jpg" },
+            { id: 6, name: "Компливит витамины №60", price: 450, image: "img/vitamins/complivit.jpg" },
+            { id: 7, name: "Супрадин таб. шип. №10", price: 520, image: "img/vitamins/supradin.jpg" },
+            { id: 8, name: "Магний B6 таб. №50", price: 380, image: "img/vitamins/magnesium.jpg" },
+            { id: 9, name: "Омега-3 капс. 500мг №60", price: 650, image: "img/vitamins/omega.jpg" },
+            { id: 10, name: "Витамин D3 2000МЕ №60", price: 420, image: "img/vitamins/vitamin-d.jpg" }
+        ];
+
+        // Функция обновления отображения корзины
+        function updateCartDisplay() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartItemsElement = document.getElementById('cart-items');
+            
+            // Если корзина пуста
+            if (cart.length === 0) {
+                cartItemsElement.innerHTML = `
+                    <div class="empty-cart">
+                        <p>Ваша корзина пуста</p>
+                        <a href="products.html" class="btn">Перейти в каталог</a>
+                    </div>
+                `;
+                updateSummary(0);
+                return;
+            }
+            
+            // Очищаем контейнер
+            cartItemsElement.innerHTML = '';
+            
+            let totalSum = 0;
+            
+            // Отображаем каждый товар
+            cart.forEach(cartItem => {
+                const product = products.find(p => p.id === cartItem.id);
+                if (!product) return;
+                
+                const itemSum = product.price * cartItem.quantity;
+                totalSum += itemSum;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'cart-item';
+                itemElement.dataset.id = cartItem.id;
+                itemElement.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="cart-item__img">
+                    <div class="cart-item__info">
+                        <h3 class="cart-item__title">${product.name}</h3>
+                        <p class="cart-item__price">${product.price} ₽ × ${cartItem.quantity} = ${itemSum} ₽</p>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn minus">-</button>
+                            <span class="quantity">${cartItem.quantity}</span>
+                            <button class="quantity-btn plus">+</button>
+                        </div>
+                    </div>
+                    <button class="remove-item" title="Удалить">×</button>
+                `;
+                
+                cartItemsElement.appendChild(itemElement);
+            });
+            
+            // Обновляем итоговую сумму
+            updateSummary(totalSum);
+            
+            // Добавляем обработчики событий
+            addCartEventListeners();
+        }
+        
+        // Функция обновления итоговой суммы
+        function updateSummary(totalSum) {
+            const deliveryCost = totalSum < 3000 ? 300 : 0;
+            const total = totalSum + deliveryCost;
+            
+            document.getElementById('subtotal').textContent = `${totalSum} ₽`;
+            document.getElementById('delivery').textContent = `${deliveryCost} ₽`;
+            document.getElementById('total').textContent = `${total} ₽`;
+            
+            // Обновляем счетчик в шапке
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.querySelector('.cart-count').textContent = totalItems;
+        }
+        
+        // Функция добавления обработчиков событий
+        function addCartEventListeners() {
+            // Уменьшение количества
+            document.querySelectorAll('.minus').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = parseInt(this.closest('.cart-item').dataset.id);
+                    updateCartItemQuantity(itemId, -1);
+                });
+            });
+            
+            // Увеличение количества
+            document.querySelectorAll('.plus').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = parseInt(this.closest('.cart-item').dataset.id);
+                    updateCartItemQuantity(itemId, 1);
+                });
+            });
+            
+            // Удаление товара
+            document.querySelectorAll('.remove-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemId = parseInt(this.closest('.cart-item').dataset.id);
+                    removeFromCart(itemId);
+                });
+            });
+        }
+        
+        // Функция изменения количества товара
+        function updateCartItemQuantity(itemId, change) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const itemIndex = cart.findIndex(item => item.id === itemId);
+            
+            if (itemIndex !== -1) {
+                cart[itemIndex].quantity += change;
+                
+                // Удаляем если количество ≤ 0
+                if (cart[itemIndex].quantity <= 0) {
+                    cart.splice(itemIndex, 1);
+                }
+                
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartDisplay();
+            }
+        }
+        
+        // Функция удаления товара
+        function removeFromCart(itemId) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart = cart.filter(item => item.id !== itemId);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartDisplay();
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartDisplay();
+        });
+    </script>
+</body>
+</html>
