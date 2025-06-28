@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Корзина | Аптека "Здоровье"</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .cart-container {
+            margin: 30px 0;
+        }
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        .back-link::before {
+            content: "←";
+            margin-right: 5px;
+        }
+        .cart-items {
+            margin-bottom: 30px;
+        }
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-right: 20px;
+        }
+        .cart-item-info {
+            flex-grow: 1;
+        }
+        .cart-item-title {
+            margin: 0 0 5px;
+        }
+        .cart-item-price {
+            color: #777;
+            margin: 5px 0;
+        }
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+        }
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .quantity {
+            margin: 0 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+        .remove-item {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #777;
+        }
+        .remove-item:hover {
+            color: #f44336;
+        }
+        .cart-summary {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .total-row {
+            font-weight: bold;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .checkout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .checkout-btn:hover {
+            background: #45a049;
+        }
+        .empty-cart {
+            text-align: center;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <!-- Такое же как в index.html -->
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="cart-container">
+                <div class="cart-header">
+                    <h1>Ваша корзина</h1>
+                    <a href="products.html" class="back-link">Вернуться в каталог</a>
+                </div>
+                
+                <div class="cart-items" id="cart-items">
+                    <!-- Товары будут загружены через JS -->
+                </div>
+                
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Товары:</span>
+                        <span id="subtotal">0 ₽</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка:</span>
+                        <span id="delivery">0 ₽</span>
+                    </div>
+                    <div class="summary-row total-row">
+                        <span>Итого:</span>
+                        <span id="total">0 ₽</span>
+                    </div>
+                    <button class="checkout-btn" onclick="window.location.href='checkout.html'">Оформить заказ</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/cart.js"></script>
+    <script>
+        // Функция обновления отображения корзины
+        function updateCartDisplay() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            const cartItems = document.getElementById('cart-items');
+            const products = JSON.parse(localStorage.getItem('products')) || [];
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = `
+                    <div class="empty-cart">
+                        <p>Ваша корзина пуста</p>
+                        <a href="products.html" class="btn">Перейти в каталог</a>
+                    </div>
+                `;
+                updateSummary(0);
+                return;
+            }
+            
+            cartItems.innerHTML = '';
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                const product = products.find(p => p.id === item.id);
+                if (!product) return;
+                
+                const itemTotal = product.price * item.quantity;
+                subtotal += itemTotal;
+                
+                const cartItem = document.createElement('div');
+                cartItem.className = 'cart-item';
+                cartItem.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="cart-item-img">
+                    <div class="cart-item-info">
+                        <h3 class="cart-item-title">${product.name}</h3>
+                        <p class="cart-item-price">${product.price} ₽ × ${item.quantity} = ${itemTotal} ₽</p>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn minus" data-id="${product.id}">-</button>
+                            <span class="quantity">${item.quantity}</span>
+                            <button class="quantity-btn plus" data-id="${product.id}">+</button>
+                        </div>
+                    </div>
+                    <button class="remove-item" data-id="${product.id}">×</button>
+                `;
+                cartItems.appendChild(cartItem);
+            });
+            
+            updateSummary(subtotal);
+            addCartEventListeners();
+            updateCartCounter();
+        }
+        
+        // Функция обновления итоговой суммы
+        function updateSummary(subtotal) {
+            const delivery = subtotal > 3000 ? 0 : 300;
+            const total = subtotal + delivery;
+            
+            document.getElementById('subtotal').textContent = `${subtotal} ₽`;
+            document.getElementById('delivery').textContent = `${delivery} ₽`;
+            document.getElementById('total').textContent = `${total} ₽`;
+        }
+        
+        // Функция добавления обработчиков событий
+        function addCartEventListeners() {
+            // Уменьшение количества
+            document.querySelectorAll('.minus').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.dataset.id);
+                    updateCartItemQuantity(productId, -1);
+                });
+            });
+            
+            // Увеличение количества
+            document.querySelectorAll('.plus').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.dataset.id);
+                    updateCartItemQuantity(productId, 1);
+                });
+            });
+            
+            // Удаление товара
+            document.querySelectorAll('.remove-item').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const productId = parseInt(this.dataset.id);
+                    removeFromCart(productId);
+                });
+            });
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartDisplay();
+        });
+    </script>
+</body>
+</html>
